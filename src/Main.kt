@@ -3,10 +3,6 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 
-typealias Report = String
-
-data class DaySubscriptions(val date: LocalDate, val subscribers: List<Customer>)
-
 fun main(args: Array<String>) {
 
     println(greetings)
@@ -22,7 +18,7 @@ fun main(args: Array<String>) {
         startDate = LocalDate.of(2018, 3, 31)
     )
 
-    val report: Report = compileReport(subscriptions)
+    val report: String = compileReport(subscriptions)
 
     println(report)
 
@@ -129,6 +125,9 @@ fun subscribersForRangeOfDates(
     )
 
 
+data class DaySubscriptions(val date: LocalDate, val subscribers: List<Customer>)
+
+
 fun subscribersForSingleDate(
     date: LocalDate,
     customers: List<Customer>
@@ -158,7 +157,7 @@ fun subscribersForSingleDate(
 fun compileReport(
     subscriptions: List<DaySubscriptions>,
     formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("E dd-MMMM-yyyy")
-): Report {
+): String {
 
     val stringBuilder = StringBuilder()
 
