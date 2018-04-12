@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
 
     val customers: List<Customer> = makeCustomers(preferences)
 
-    val subscriptions: List<DaySubscriptions> = subscribersForRangeOfDates(
+    val subscriptions: List<DaySubscriptions> = dateRangeSubscriptions(
         customers = customers,
         startDate = LocalDate.of(2018, 3, 31)
     )
@@ -23,6 +23,7 @@ fun main(args: Array<String>) {
     println(report)
 
 }
+
 
 val greetings: String =
     """
@@ -57,13 +58,15 @@ fun readFromConsole(
     }
 }
 
+
 sealed class Preference {
-    class DayOfMonth(val value: Int) : Preference()
-    class Weekdays(val days: List<DayOfWeek>) : Preference()
+    class DayOfMonth(val day: Int) : Preference()
+    class Weekdays(val weekdays: List<DayOfWeek>) : Preference()
     object Daily : Preference()
     object Never : Preference()
     object Unknown : Preference()
 }
+
 
 fun convertToPreferences(
     input: String,
@@ -84,6 +87,7 @@ fun convertToPreferences(
         else -> Preference.Unknown
     }
 
+
 val stringToDayOfWeek: Map<String, DayOfWeek> = mapOf(
     "MON" to DayOfWeek.MONDAY,
     "TUE" to DayOfWeek.TUESDAY,
@@ -93,6 +97,7 @@ val stringToDayOfWeek: Map<String, DayOfWeek> = mapOf(
     "SAT" to DayOfWeek.SATURDAY,
     "SUN" to DayOfWeek.SUNDAY
 )
+
 
 fun makeCustomers(
     preferences: List<Preference>,
@@ -104,10 +109,13 @@ fun makeCustomers(
         .map { preference -> Customer(customerIds.nextChar(), preference) }
 
 
-data class Customer(val id: Char, val preferences: Preference)
+data class Customer(
+    val id: Char,
+    val preferences: Preference
+)
 
 
-fun subscribersForRangeOfDates(
+fun dateRangeSubscriptions(
     customers: List<Customer>,
     startDate: LocalDate = LocalDate.now(),
     endDate: LocalDate = startDate.plusDays(90),
@@ -115,36 +123,36 @@ fun subscribersForRangeOfDates(
 ): List<DaySubscriptions> =
 
     if (startDate == endDate) result
-    else subscribersForRangeOfDates(
-        customers = customers,
-        startDate = startDate.plusDays(1),
-        endDate = endDate,
-        result = result.plus(
-            subscribersForSingleDate(date = startDate.plusDays(1), customers = customers)
+    else dateRangeSubscriptions(
+        customers, startDate.plusDays(1), endDate, result.plus(
+            singleDateSuscriptions(startDate.plusDays(1), customers)
         )
     )
 
 
-data class DaySubscriptions(val date: LocalDate, val subscribers: List<Customer>)
+data class DaySubscriptions(
+    val date: LocalDate,
+    val subscribers: List<Customer>
+)
 
 
-fun subscribersForSingleDate(
+fun singleDateSuscriptions(
     date: LocalDate,
     customers: List<Customer>
 ): DaySubscriptions =
 
     DaySubscriptions(
-        date = date,
-        subscribers = customers.mapNotNull { customer ->
+        date,
+        customers.mapNotNull { customer ->
 
             when (customer.preferences) {
 
                 is Preference.DayOfMonth ->
-                    if (date.dayOfMonth == customer.preferences.value) customer
+                    if (date.dayOfMonth == customer.preferences.day) customer
                     else null
 
                 is Preference.Weekdays -> {
-                    if (date.dayOfWeek in customer.preferences.days) customer
+                    if (date.dayOfWeek in customer.preferences.weekdays) customer
                     else null
                 }
                 is Preference.Daily -> customer
@@ -153,6 +161,7 @@ fun subscribersForSingleDate(
             }
         }
     )
+
 
 fun compileReport(
     subscriptions: List<DaySubscriptions>,
